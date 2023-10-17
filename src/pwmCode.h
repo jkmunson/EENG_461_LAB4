@@ -14,11 +14,11 @@
 #define MAX_PULSE 2.5f         // 90deg pulse (~2.5ms pulse)
 #define DEG_OF_ROTATION 180.0f // How many degrees the servo can rotate
 extern volatile int set_angle;            // 0 <= set_angle <= 180
-extern volatile uint8_t duty_cycle;       // Percent in decimal form
+extern volatile float duty_cycle;       // Percent in decimal form
 
 void PWMConfigure(void);
 void PWMSetPeriod(uint16_t cycles_per_period);
-void PWMSetDutyCycle(uint8_t duty_cycle);
+void PWMSetDutyCycle(float duty_cycle);
 void PWMEnable(void);
 void PWMDisable(void);
 

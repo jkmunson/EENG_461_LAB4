@@ -3,7 +3,7 @@
 #include "common/tm4c123gh6pm.h"
 
 volatile int set_angle = 0;            // 0 <= set_angle <= 180
-volatile uint8_t duty_cycle = 0;       // Percent in decimal form
+volatile float duty_cycle = 0.0f;       // Percent in decimal form
 
 void PWMConfigure(void) {
     /*
@@ -24,8 +24,8 @@ void PWMConfigure(void) {
     PWM0_2_GENB_R = PWM_2_GENB_ACTCMPBD_ONE | PWM_2_GENB_ACTLOAD_ZERO | PWM_2_GENB_ACTZERO_ONE;
                                                                             //Set PWM1 Gen2-B comparator, load, and zero
 
-    PWM0_2_LOAD_R = CYCLES_PER_MS * 20;                                     //Set PWM Gen2 Period to 1ms
-    PWM0_2_CMPB_R = 0;                                                      //Set initial duty cycle
+    PWM0_2_LOAD_R = CYCLES_PER_MS * 20;                                     //Set PWM Gen2 Period to 20ms
+    PWM0_2_CMPB_R = CYCLES_PER_MS * 1.5;                                    //Set initial duty cycle to ~90deg
 
     PWMEnable();                                                            //Enable PWM
 
@@ -37,9 +37,9 @@ void PWMSetPeriod(uint16_t cycles_per_period) {
     PWMEnable();                                                            //Enable PWM
 }
 
-void PWMSetDutyCycle(uint8_t duty_cycle) {
+void PWMSetDutyCycle(float duty_cycle) {
     PWMDisable();                                                           //Disable PWM
-    PWM0_2_CMPB_R = CYCLES_PER_MS_DIV_100 * 20 * (duty_cycle);              //Set new duty cycle
+    PWM0_2_CMPB_R = CYCLES_PER_MS * 20 * duty_cycle;                      //Set new duty cycle
     PWMEnable();                                                            //Enable PWM
 }
 
