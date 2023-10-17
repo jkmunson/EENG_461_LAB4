@@ -3,8 +3,7 @@
 #define EENG461_LAB_3_PWMCODE_H
 
 #define RED_LED (1 << 1)
-#define CYCLES_PER_MS 15999
-#define CYCLES_PER_MS_DIV_100 159
+#define CYCLES_PER_MS 1000
 #define DC_TOLERANCE 1
 
 //Servo Globals
@@ -13,7 +12,7 @@
 #define MIN_PULSE 0.5f         // -90deg pulse (~0.5ms pulse)
 #define MAX_PULSE 2.5f         // 90deg pulse (~2.5ms pulse)
 #define DEG_OF_ROTATION 180.0f // How many degrees the servo can rotate
-extern volatile int set_angle;            // 0 <= set_angle <= 180
+extern volatile float set_angle;            // 0 <= set_angle <= 180
 extern volatile float duty_cycle;       // Percent in decimal form
 
 void PWMConfigure(void);

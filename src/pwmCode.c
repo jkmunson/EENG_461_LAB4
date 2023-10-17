@@ -2,7 +2,7 @@
 #include "pwmCode.h"
 #include "common/tm4c123gh6pm.h"
 
-volatile int set_angle = 0;            // 0 <= set_angle <= 180
+volatile float set_angle = 0.0f;            // 0 <= set_angle <= 180
 volatile float duty_cycle = 0.0f;       // Percent in decimal form
 
 void PWMConfigure(void) {
@@ -19,6 +19,8 @@ void PWMConfigure(void) {
     GPIO_PORTE_AFSEL_R |= (1 << 5);                                         //Set Alternate Function for PE5
     GPIO_PORTE_PCTL_R |= GPIO_PCTL_PE5_M0PWM5;                              //Set Port Control to PE5 PWM value
     GPIO_PORTE_DEN_R |= (1 << 5);                                           //Set Digital Enable for PE5
+
+    SYSCTL_RCC_R |= SYSCTL_RCC_USEPWMDIV | SYSCTL_RCC_PWMDIV_16;
 
     PWM0_2_CTL_R = 0x0;                                                     //Disable PWM0 Gen2
     PWM0_2_GENB_R = PWM_2_GENB_ACTCMPBD_ONE | PWM_2_GENB_ACTLOAD_ZERO | PWM_2_GENB_ACTZERO_ONE;
@@ -39,7 +41,7 @@ void PWMSetPeriod(uint16_t cycles_per_period) {
 
 void PWMSetDutyCycle(float duty_cycle) {
     PWMDisable();                                                           //Disable PWM
-    PWM0_2_CMPB_R = CYCLES_PER_MS * 20 * duty_cycle;                      //Set new duty cycle
+    PWM0_2_CMPB_R = CYCLES_PER_MS * 20 * duty_cycle;                        //Set new duty cycle
     PWMEnable();                                                            //Enable PWM
 }
 
