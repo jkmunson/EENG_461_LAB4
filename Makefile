@@ -50,7 +50,7 @@ flash:
 
 clean:
 	rm -rf $(BUILD_DIR)/*
-	rm lab3_report.pdf
+	rm lab4444port.pdf -f
 
 credir:
 	mkdir -p $(BUILD_DIR)
