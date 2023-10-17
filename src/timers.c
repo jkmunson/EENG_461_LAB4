@@ -3,8 +3,11 @@
 #include "common/tm4c123gh6pm.h"
 #include "uart_print.h"
 
+#define SECONDS_DIVISOR 6
+
 volatile int32_t uptime_seconds;
 volatile int32_t uptime_third_seconds;
+
 
 void configureAdcTimer (void) {
 
@@ -31,7 +34,7 @@ void configureDebounceTimer(void) {
     TIMER1_CTL_R |= TIMER_CTL_TASTALL; //Stall for debug
     TIMER1_CFG_R = TIMER_CFG_32_BIT_TIMER;
     TIMER1_TAMR_R |= TIMER_TAMR_TAMR_PERIOD; //Set Timer to count down periodically
-    TIMER1_TAILR_R = (CYCLES_PER_SEC - 1)/3;
+    TIMER1_TAILR_R = CYCLES_PER_SEC/SECONDS_DIVISOR - 1;
     TIMER1_TAPR_R = 0;
     TIMER1_ICR_R |= TIMER_ICR_TATOCINT; //Clear Interrupt
     TIMER1_IMR_R |= TIMER_IMR_TATOIM; //Enable Interrupt as Timeout
