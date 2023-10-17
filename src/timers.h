@@ -10,3 +10,5 @@ void configureAdcTimer (void);
 void configureDebounceTimer(void);
 void debounceTimerISR (void);
 void ADCTrigger(void);
+
+#define SECONDS_DIVISOR 6

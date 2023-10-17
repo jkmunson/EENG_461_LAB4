@@ -43,16 +43,22 @@ void configureDebounceTimer(void) {
 }
 
 void debounceTimerISR (void) {
-	static char count_thirds = 0;
+	static char frac_second = 0;
+	static char frac_third_second = 0;
     TIMER1_IMR_R &= ~TIMER_IMR_TATOIM; //Disable Interrupt
     TIMER1_ICR_R |= TIMER_ICR_TATOCINT; //Clear Interrupt
 	
-	if (++count_thirds > 2){
+	if (++frac_second > (SECONDS_DIVISOR-1)){
 		uptime_seconds++;
-		count_thirds = 0;
+		frac_second = 0;
 	}
 	
-	uptime_third_seconds++;
-
+	if(++frac_third_second > (SECONDS_DIVISOR/3)-1){
+		uptime_third_seconds++;
+		frac_third_second = 0;
+	}
+	
+	//Toggle trig pin
+	
     TIMER1_IMR_R |= TIMER_IMR_TATOIM; //Enable Interrupt
 }

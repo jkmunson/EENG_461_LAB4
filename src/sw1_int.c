@@ -53,7 +53,7 @@ static void sw1_debounce(void){
 		if(TIMER_ISR_IS_PENDING) debounceTimerISR();
 		
 		uptime_now = uptime_seconds;
-		cycles_now = CYCLES_PER_SEC-(TIMER1_TAR_R*3);
+		cycles_now = CYCLES_PER_SEC-(TIMER1_TAR_R*SECONDS_DIVISOR);
 		
 	// If the counter overflowed during this code block, then our reads of uptime and cycles are invalid. Re-do them.
 	} while (TIMER_ISR_IS_PENDING); 
