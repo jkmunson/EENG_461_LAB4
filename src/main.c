@@ -38,7 +38,7 @@ int main (void) {
 
         /* If a duty cycle change occured, calculate new value and set pulse width */
         if (last_distance != distance_millimeters && (0 <= set_angle && set_angle <= DEG_OF_ROTATION)) {
-            duty_cycle = ((set_angle * (MAX_PULSE - MIN_PULSE)/DEG_OF_ROTATION) + MIN_PULSE) / 20;
+            duty_cycle = (((set_angle * (MAX_PULSE - MIN_PULSE)/DEG_OF_ROTATION) + MIN_PULSE) / 200) * 100;
             PWMSetDutyCycle(duty_cycle);
             last_distance = distance_millimeters;
         }

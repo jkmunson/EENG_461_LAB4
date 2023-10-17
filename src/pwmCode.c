@@ -3,7 +3,7 @@
 #include "common/tm4c123gh6pm.h"
 
 volatile int set_angle = 0;            // 0 <= set_angle <= 180
-volatile float duty_cycle = 0.0f;       // Percent in decimal form
+volatile uint8_t duty_cycle = 0;       // Percent in decimal form
 
 void PWMConfigure(void) {
     /*
