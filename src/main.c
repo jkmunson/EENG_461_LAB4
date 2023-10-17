@@ -28,6 +28,7 @@ int main (void) {
 	Enable_Interrupts(); //Enable Global Interrupts
 	
 	uint16_t duty_cycle_last = 0; //Last stored/set duty cycle
+	int32_t last_print_time = 0;
 	
 	while (1) {
 
@@ -42,7 +43,8 @@ int main (void) {
 			duty_cycle_last = temp_duty_cycle;
 		}
 		
-		if(NEED_PRINT) {
+		if(NEED_PRINT || (uptime_third_seconds > last_print_time)) {
+			last_print_time = uptime_third_seconds;
 			float voltage = ((float)potReading*3.3f)/4095.0f;
 			printlf("The current ADC value is %d and the DC is %f \n\r", potReading, &voltage);
 			NEED_PRINT = false;
