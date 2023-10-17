@@ -32,7 +32,7 @@ int main (void) {
 	
 	while (1) {
 
-        uint16_t distance_millimeters = (uint16_t)((potReading*100)/4095);
+        uint16_t distance_millimeters = potReading/2;
 
         set_angle = (distance_millimeters * DEG_OF_ROTATION) / 1000;
 
