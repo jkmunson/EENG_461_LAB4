@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <common/tm4c123gh6pm.h>
+#include <driverlib/rom.h>
 
 int main (void) {
 
@@ -47,6 +48,7 @@ int main (void) {
 			last_print_time = uptime_third_seconds;
 			float voltage = ((float)potReading*3.3f)/4095.0f;
 			printlf("The current ADC value is %d and the DC is %f \n\r", potReading, &voltage);
+			printlf("System Clock: %d\n", ROM_SysCtlClockGet());
 			NEED_PRINT = false;
 		}
 		

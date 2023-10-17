@@ -2,6 +2,7 @@
 #include "main.h"
 #include "common/tm4c123gh6pm.h"
 #include "uart_print.h"
+#include <stdbool.h>
 
 #define SECONDS_DIVISOR 6
 
@@ -53,7 +54,8 @@ void debounceTimerISR (void) {
 		frac_second = 0;
 	}
 	
-	if(++frac_third_second > (SECONDS_DIVISOR/3)-1){
+
+	if((++frac_third_second > (SECONDS_DIVISOR/3))){
 		uptime_third_seconds++;
 		frac_third_second = 0;
 	}
