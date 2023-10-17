@@ -20,7 +20,7 @@ void PWMConfigure(void) {
     GPIO_PORTE_PCTL_R |= GPIO_PCTL_PE5_M0PWM5;                              //Set Port Control to PE5 PWM value
     GPIO_PORTE_DEN_R |= (1 << 5);                                           //Set Digital Enable for PE5
 
-    SYSCTL_RCC_R |= SYSCTL_RCC_USEPWMDIV | SYSCTL_RCC_PWMDIV_16;
+    SYSCTL_RCC_R |= SYSCTL_RCC_PWMDIV_16;
 
     PWM0_2_CTL_R = 0x0;                                                     //Disable PWM0 Gen2
     PWM0_2_GENB_R = PWM_2_GENB_ACTCMPBD_ONE | PWM_2_GENB_ACTLOAD_ZERO | PWM_2_GENB_ACTZERO_ONE;
