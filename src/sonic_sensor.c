@@ -16,7 +16,7 @@ void configure_sonic_sensor(void){
 	TIMER2_CTL_R &= ~TIMER_CTL_TAEN; //Disable Timer
     TIMER2_CTL_R &= ~TIMER_CTL_TASTALL; //Stall for debug
     TIMER2_CFG_R = TIMER_CFG_32_BIT_TIMER;
-    TIMER2_TAMR_R = TIMER_TAMR_TAMR_CAP | TIMER_TAMR_TACMR | TIMER_TAMR_TACDIR; //Capture Mode | Capture Time | Count Up
+    TIMER2_TAMR_R = TIMER_TAMR_TAMR_CAP | TIMER_TAMR_TACMR | TIMER_TAMR_TACDIR | TIMER_TAMR_TAPWMIE; //Capture Mode | Capture Time | Count Up | Interrupt on capture events
     TIMER2_TAILR_R = CYCLES_PER_SEC/SECONDS_DIVISOR - 1;
     TIMER2_TAPR_R = 0;
     TIMER2_ICR_R |= TIMER_ICR_TATOCINT; //Clear Interrupt
