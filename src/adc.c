@@ -3,7 +3,7 @@
 #include "timers.h"
 #include "common/tm4c123gh6pm.h"
 
-#define GPIO_PIN5 (1 << 5)
+#define GPIO_PIN4 (1 << 4)
 #define POT_TRIGGER_MARGIN 0xA
 
 volatile uint16_t potReading;
@@ -16,9 +16,9 @@ void ADCPinConfigure(void) {
     SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R4;                    //Enable GPIO Pin for ADC (PE5)
     while(!(SYSCTL_RCGCGPIO_R & SYSCTL_RCGCGPIO_R4)) {};        //Wait fo peripheral to be ready
 
-    GPIO_PORTE_AFSEL_R |= GPIO_PIN5;                            //Set Alternate Function Select
-    GPIO_PORTE_DEN_R &= ~GPIO_PIN5;                             //Clear Digital Enable for Pin 5
-    GPIO_PORTE_AMSEL_R |= GPIO_PIN5;                            //Set Alternate Mode Select
+    GPIO_PORTE_AFSEL_R |= GPIO_PIN4;                            //Set Alternate Function Select
+    GPIO_PORTE_DEN_R &= ~GPIO_PIN4;                             //Clear Digital Enable for Pin 5
+    GPIO_PORTE_AMSEL_R |= GPIO_PIN4;                            //Set Alternate Mode Select
 
 }
 
@@ -26,7 +26,7 @@ void ADCSampleSequencerConfigure(void) {
 
     ADC0_ACTSS_R &= ~ADC_ACTSS_ASEN3;                           //Disable Sequencer 3
     ADC0_EMUX_R |= ADC_EMUX_EM3_TIMER;                          //Set ADC as Timer Triggered
-    ADC0_SSMUX3_R |= 0x8;                                       //Enable AIN8
+    ADC0_SSMUX3_R |= 0x9;                                       //Enable AIN9
     ADC0_SSCTL3_R |= ADC_SSCTL3_IE0 | ADC_SSCTL3_END0;          //Sequencer control
     ADC0_SAC_R = 0x6;                                           //Enables x64 Oversampling
     ADC0_ISC_R |= ADC_ISC_IN3;                                  //Clear Interrupt

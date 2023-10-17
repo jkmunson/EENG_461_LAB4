@@ -27,21 +27,21 @@ int main (void) {
 
 	Enable_Interrupts(); //Enable Global Interrupts
 	
-	uint16_t duty_cycle_last = 0; //Last stored/set duty cycle
+	uint16_t last_distance = 0; //Last stored distance
 	int32_t last_print_time = 0;
 	
 	while (1) {
 
-        //Calculate a corresponding duty cycle percentage
-		uint16_t temp_duty_cycle = (uint16_t)((potReading*100)/4095);
+        uint16_t distance_millimeters = (uint16_t)((potReading*100)/4095);
 
-        /*
-         * Only set a new duty cycle if the potentiometer value changed
-         */
-		if (temp_duty_cycle != duty_cycle_last) {
-			PWMSetDutyCycle(temp_duty_cycle);
-			duty_cycle_last = temp_duty_cycle;
-		}
+        set_angle = (distance_millimeters * DEG_OF_ROTATION) / 1000;
+
+        /* If a duty cycle change occured, calculate new value and set pulse width */
+        if (last_distance != distance_millimeters && (0 <= set_angle && set_angle <= DEG_OF_ROTATION)) {
+            duty_cycle = ((set_angle * (MAX_PULSE - MIN_PULSE)/DEG_OF_ROTATION) + MIN_PULSE) / 20;
+            PWMSetDutyCycle(duty_cycle);
+            last_distance = distance_millimeters;
+        }
 		
 		if(NEED_PRINT || (uptime_third_seconds > last_print_time)) {
 			last_print_time = uptime_third_seconds;
