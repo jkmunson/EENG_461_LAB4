@@ -1,0 +1,3 @@
+objs/
+CMakeLists.txt
+cmake-build-debug
