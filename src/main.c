@@ -11,7 +11,9 @@
 #include <driverlib/rom.h>
 
 int main (void) {
-
+	//printf UART setup
+	setup_uart_printer();
+	
     //GPIO/Switch Configuration
 	GPIOConfigure();
 	configureDebounceTimer();
@@ -23,13 +25,11 @@ int main (void) {
     //PWM Configuration
 	PWMConfigure();
 
-    //printf UART setup
-	setup_uart_printer();
-
 	Enable_Interrupts(); //Enable Global Interrupts
 	
 	uint16_t last_distance = 0; //Last stored distance
 	int32_t last_print_time = 0;
+	uint64_t cycles_last = 0;
 	
 	while (1) {
 
@@ -44,11 +44,9 @@ int main (void) {
             last_distance = distance_millimeters;
         }
 		
-		if(NEED_PRINT || (uptime_third_seconds > last_print_time)) {
-			last_print_time = uptime_third_seconds;
-			float voltage = ((float)potReading*3.3f)/4095.0f;
-			printlf("The current ADC value is %d and the DC is %f \n\r", potReading, &voltage);
-			printlf("System Clock: %d\n", ROM_SysCtlClockGet());
+		if(NEED_PRINT) {
+			last_print_time = uptime_seconds;
+			printlf("[%d] The current ADC value is %d \n\r", uptime_seconds, potReading);
 			NEED_PRINT = false;
 		}
 		

@@ -7,10 +7,9 @@
 #include "gpioCode.h"
 #include "timers.h"
 #include "uart_print.h"
+#include <driverlib/rom.h>
 
-#define MIN_CLOCKS_DEBOUNCE (int32_t)((int32_t)CYCLES_PER_SEC/100)
-
-#define TIMER_ISR_IS_PENDING (TIMER1_MIS_R & TIMER_ICR_TATOCINT)
+#define MIN_CLOCKS_DEBOUNCE (ROM_SysCtlClockGet() >> 6)
 
 bool NEED_PRINT = false;
 
@@ -32,38 +31,20 @@ void PORTF_int_handler(void){
 
 //Performs debounce by disallowing further input after the first edge transition until MIN_CLOCKS_DEBOUNCE has passed.
 static void sw1_debounce(void){
-	static int32_t uptime_last = 0; 
-	static int32_t cycles_last = 0;
+	static uint64_t cycles_last = 0;
 	static enum { RELEASED, PRESSED } button_state = RELEASED;
 	
 	const enum { FALLING, RISING } edge_type = (GPIO_PORTF_DATA_BITS_R[SW1_PIN] == SW1_PIN);
 	
-	int32_t uptime_now;
-	int32_t cycles_now;
-	
-	// Early exit for don't-care state combinations
+	//Early exit for don't-care state combinations
 	if(	((button_state == PRESSED)  && (edge_type == FALLING )) ||
 		((button_state == RELEASED) && (edge_type == RISING)) ) {
 		return;
 	}
 	
-	//Critical Section: read of the current time
-	__asm("CPSID I\n"); //Disable interrupt handling
-	do {
-		if(TIMER_ISR_IS_PENDING) debounceTimerISR();
-		
-		uptime_now = uptime_seconds;
-		cycles_now = CYCLES_PER_SEC-(TIMER1_TAR_R*SECONDS_DIVISOR);
-		
-	// If the counter overflowed during this code block, then our reads of uptime and cycles are invalid. Re-do them.
-	} while (TIMER_ISR_IS_PENDING); 
-	__asm("CPSIE I\n"); //Re-enable interrupt handeling
-	
-	int32_t seconds_passed = (uptime_now - uptime_last);
-	if(seconds_passed > 2) seconds_passed = 2; // Prevent overflow
-	int32_t cycles_passed  = (cycles_now - cycles_last) + seconds_passed*CYCLES_PER_SEC;
+	const uint64_t cycles_now = get_uptime_cycles();
+	const uint64_t cycles_passed = cycles_now - cycles_last;
 	if(cycles_passed > MIN_CLOCKS_DEBOUNCE) {
-		uptime_last = uptime_now;
 		cycles_last = cycles_now;
 		
 		switch(button_state) {
@@ -75,7 +56,7 @@ static void sw1_debounce(void){
 				button_state = PRESSED;
 				sw1_action();
 		}
-	} 
+	}
 }
 
 static void sw1_action(void) {
