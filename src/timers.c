@@ -2,6 +2,7 @@
 #include "main.h"
 #include "common/tm4c123gh6pm.h"
 #include "uart_print.h"
+#include "sonic_sensor.h"
 #include <stdbool.h>
 #include <driverlib/rom.h>
 
@@ -50,7 +51,7 @@ void configureDebounceTimer(void) {
 
 void timeKeeperISR (void) {
 	static char second_counter = 0;
-	static char eigth_second_counter = 0;
+	static char sonic_sensor_action_div = 0;
 	
 	TIMER1_IMR_R &= ~TIMER_IMR_TATOIM; //Disable Interrupt
 	TIMER1_ICR_R |= TIMER_ICR_TATOCINT; //Clear Interrupt
@@ -63,11 +64,11 @@ void timeKeeperISR (void) {
 		second_counter = 0;
 	}
 	
-	//Every 1/8 second
-	if(++eigth_second_counter == TIMER1_MULTIPLIER/4) {
-		// Send pulse with sonic sensor
-		
-		eigth_second_counter = 0;
+	if(++sonic_sensor_action_div == TIMER1_MULTIPLIER/16) {
+		// Send pulse with sonic sensor. This results in 4 falling edges/sec
+		GPIO_PORTB_DATA_BITS_R[SONIC_TRIG_PIN] = SONIC_TRIG_PIN;
+		sensor_trigger_start_time = get_uptime_cycles();
+		sonic_sensor_action_div = 0;
 	}
 	
 	TIMER1_IMR_R |= TIMER_IMR_TATOIM; //Enable Interrupt

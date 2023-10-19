@@ -4,6 +4,7 @@
 #include "pwmCode.h"
 #include "timers.h"
 #include "uart_print.h"
+#include "sonic_sensor.h"
 #include "sw1_int.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -13,6 +14,7 @@
 int main (void) {
 	//printf UART setup
 	setup_uart_printer();
+	configure_sonic_sensor();
 	
     //GPIO/Switch Configuration
 	GPIOConfigure();
@@ -29,7 +31,6 @@ int main (void) {
 	
 	uint16_t last_distance = 0; //Last stored distance
 	int32_t last_print_time = 0;
-	uint64_t cycles_last = 0;
 	
 	while (1) {
 
@@ -44,12 +45,18 @@ int main (void) {
             last_distance = distance_millimeters;
         }
 		
-		if(NEED_PRINT) {
+		if(NEED_PRINT || (uptime_seconds-last_print_time)) {
 			last_print_time = uptime_seconds;
 			printlf("[%d] The current ADC value is %d \n\r", uptime_seconds, potReading);
 			NEED_PRINT = false;
 		}
 		
+		//NOTE for Dr Meyer: There is not a specific requirement for the length of the trigger pulse, it simple needs to be over 10us
+		//And the ping transmits after the falling edge.
+		//End the output pulse for the sonic trigger. Guarenteed to exit early if the pin is already off without calling get_uptime_cycles()
+		if(GPIO_PORTB_DATA_BITS_R[SONIC_TRIG_PIN] && ((get_uptime_cycles() - sensor_trigger_start_time) > (ROM_SysCtlClockGet()>>13) ) ) {
+			GPIO_PORTB_DATA_BITS_R[SONIC_TRIG_PIN] = 0;
+		}
 	}
 
 	return (0);

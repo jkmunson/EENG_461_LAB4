@@ -2,12 +2,22 @@
 
 #include "common/tm4c123gh6pm.h"
 
-#define SONIC_TRIG_PIN	// 
-#define SONIC_ECHO_PIN (1 << 1) //PB1
+volatile uint16_t distance_millimeters;
+volatile uint64_t sensor_trigger_start_time;
 
 void configure_sonic_sensor(void){
-	
+
 	//set up GPIOs
+	// Enable GPIO clock
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
+	while(!(SYSCTL_PRGPIO_R & SYSCTL_PRGPIO_R1)) {};
+	
+	GPIO_PORTB_DIR_R |= SONIC_TRIG_PIN; //Set to output
+	
+	GPIO_PORTB_DEN_R |= SONIC_PINS; //Enable pins
+	
+	//T2CCP1
+	
 	
 	//set up timer2 as input capture
 	SYSCTL_RCGCTIMER_R |= SYSCTL_RCGCTIMER_R2; //Enable Run Mode Clock Gating Control for Timer 0
