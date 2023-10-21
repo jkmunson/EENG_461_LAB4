@@ -1,40 +1,77 @@
 #include <sonic_sensor.h>
 
 #include "common/tm4c123gh6pm.h"
+#include "driverlib/rom.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include "uart_print.h"
 
 volatile uint16_t distance_millimeters;
 volatile uint64_t sensor_trigger_start_time;
 
-void configure_sonic_sensor(void){
+#define CAPTURE_TIMER_PRESCALE 128
 
-	//set up GPIOs
-	// Enable GPIO clock
+void configure_sonic_sensor(void){
+	//Enable peripheral and wait for ready
 	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
 	while(!(SYSCTL_PRGPIO_R & SYSCTL_PRGPIO_R1)) {};
 	
 	GPIO_PORTB_DIR_R |= SONIC_TRIG_PIN; //Set to output
 	
+	GPIO_PORTB_AFSEL_R |= SONIC_ECHO_PIN; //Enable alternate function
+	GPIO_PORTB_PCTL_R = (GPIO_PORTB_PCTL_R & (~GPIO_PCTL_PB1_M)) | GPIO_PCTL_PB1_T2CCP1; //Timer2 capture 1
+	
 	GPIO_PORTB_DEN_R |= SONIC_PINS; //Enable pins
-	
-	//T2CCP1
-	
-	
-	//set up timer2 as input capture
-	SYSCTL_RCGCTIMER_R |= SYSCTL_RCGCTIMER_R2; //Enable Run Mode Clock Gating Control for Timer 0
-	while (!(SYSCTL_PRTIMER_R & SYSCTL_RCGCTIMER_R1)) {}
-	
-	TIMER2_CTL_R &= ~TIMER_CTL_TAEN; //Disable Timer
-	
-	TIMER2_CFG_R = TIMER_CFG_32_BIT_TIMER; // 32 bit mode
-	
-	TIMER2_TAMR_R = TIMER_TAMR_TAMR_CAP | TIMER_TAMR_TACMR | TIMER_TAMR_TACDIR | TIMER_TAMR_TAPWMIE; //Capture Mode | Capture Time | Count Up | Interrupt on capture events
-	
-	TIMER2_CFG_R |= TIMER_CTL_TAEVENT_BOTH | TIMER_CTL_TASTALL; //Capture events on both edges, Stop timer during debug
-	
-	TIMER2_IMR_R |= TIMER_IMR_CAEIM; // Enable interrupts on capture events
 
-	TIMER1_CTL_R |= TIMER_CTL_TAEN; //Enable Timer
+	//Timer2 as input capture
+	SYSCTL_RCGCTIMER_R |= SYSCTL_RCGCTIMER_R2; //Enable Run Mode Clock Gating Control for Timer 2
+	while (!(SYSCTL_PRTIMER_R & SYSCTL_RCGCTIMER_R2)) {}
 	
+	TIMER2_CTL_R &= ~(TIMER_CTL_TAEN | TIMER_CTL_TBEN); //Disable Timer
 	
+	TIMER2_CFG_R = (TIMER2_CFG_R & (~TIMER_CFG_M)) | TIMER_CFG_16_BIT; // 16 bit mode - must be split for capture
+	TIMER2_TBMR_R = TIMER_TBMR_TBMR_CAP | TIMER_TBMR_TBCDIR | TIMER_TBMR_TBCMR; // Capture Mode, count up, edge-time mode, 
+	TIMER2_CTL_R |= TIMER_CTL_TBEVENT_BOTH; 	// Capture both edges
+	TIMER2_IMR_R |= TIMER_IMR_CBEIM; 			// Unmask capture event interrupt
+	TIMER2_ICR_R = TIMER_ICR_CBECINT; 			// Clear capture interrupt flag
+	NVIC_EN0_R |= 1 << (INT_TIMER2B - 16);		// Enable interrupt in NVIC
+	TIMER2_TBPR_R = (TIMER2_TBPR_R & (~TIMER_TBPR_TBPSR_M)) | CAPTURE_TIMER_PRESCALE;
+	TIMER2_CTL_R |= TIMER_CTL_TBEN; 			// Enable Timer
+
 }
 
+void TIMER2B_INT_HANDELER(void){
+	TIMER2_ICR_R = TIMER_ICR_CBECINT; // Ack interrupt
+	static uint32_t cycles_per_mm;
+	static uint32_t cycles_rise = 0;
+	
+	// The division and function call are potentially expensive. Doing this to avoid hard-coding the system clock
+	// but still minimizing the run-time impact.
+	static bool cycles_per_mm_is_initialized = false;
+	if(!cycles_per_mm_is_initialized) {
+		cycles_per_mm = (ROM_SysCtlClockGet() << 1) / 340270;
+		cycles_per_mm_is_initialized = true;
+	}
+	
+	const enum {RISING, FALLING} edge_type = (GPIO_PORTB_DATA_BITS_R[SONIC_ECHO_PIN] == SONIC_ECHO_PIN) ? RISING : FALLING;
+	
+	switch (edge_type){
+		case RISING: {
+			const uint32_t temp = TIMER2_TBR_R;
+			cycles_rise = ((temp & 0xFFFF) * CAPTURE_TIMER_PRESCALE) + ((temp & 0xFF0000) >> 16);
+		} return;
+		
+		case FALLING: {
+			//The prescaler at 16:23 acts as the low 8 bits of a 24 bit value for the counter. By reshuffling the bytes
+			//We effectively get a 24 bit counter
+			const uint32_t temp = TIMER2_TBR_R;
+			const uint32_t cycles_fall = ((temp & 0xFFFF) * CAPTURE_TIMER_PRESCALE) + ((temp & 0xFF0000) >> 16);
+			
+			//If no time wrap has occurred, then it's the difference. Otherwise, it's the max value minus the difference
+			//This assumes that it hasn't been more than twice the timer period. 
+			const uint32_t cycles_passed = (cycles_fall > cycles_rise) ? (cycles_fall - cycles_rise) : (0xFFFFFF) - (cycles_rise - cycles_fall);
+			
+			distance_millimeters = cycles_passed / cycles_per_mm;
+		} return;
+	}
+}

@@ -7,6 +7,7 @@ extern volatile uint16_t distance_millimeters;
 extern volatile uint64_t sensor_trigger_start_time;
 
 void configure_sonic_sensor(void);
+void TIMER2B_INT_HANDELER(void);
 
 #define SONIC_TRIG_PIN (1 << 0) //PB0 
 #define SONIC_ECHO_PIN (1 << 1) //PB1

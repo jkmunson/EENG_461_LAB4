@@ -9,6 +9,7 @@
 #include "adc.h"
 #include "timers.h"
 #include "string.h"
+#include "sonic_sensor.h"
 
 //*****************************************************************************
 //
@@ -84,7 +85,7 @@ void (* const g_pfnVectors[])(void) =
     timeKeeperISR,                          // Timer 1 subtimer A
     IntDefaultHandler,                      // Timer 1 subtimer B
     IntDefaultHandler,                      // Timer 2 subtimer A
-    IntDefaultHandler,                      // Timer 2 subtimer B
+    TIMER2B_INT_HANDELER,                      // Timer 2 subtimer B
     IntDefaultHandler,                      // Analog Comparator 0
     IntDefaultHandler,                      // Analog Comparator 1
     IntDefaultHandler,                      // Analog Comparator 2

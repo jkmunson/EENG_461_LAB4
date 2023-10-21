@@ -37,7 +37,10 @@ int main (void) {
         uint16_t distance_millimeters = potReading/2;
 
         set_angle = (distance_millimeters * DEG_OF_ROTATION) / 1000;
-
+		
+		printlf("Reg: %u\n", TIMER2_TBV_R);
+	}{
+		
         /* If a duty cycle change occured, calculate new value and set pulse width */
         if (last_distance != distance_millimeters && (0 <= set_angle && set_angle <= DEG_OF_ROTATION)) {
             duty_cycle = (((set_angle * (MAX_PULSE - MIN_PULSE)/DEG_OF_ROTATION) + MIN_PULSE) / 20);
@@ -47,7 +50,7 @@ int main (void) {
 		
 		if(NEED_PRINT || (uptime_seconds-last_print_time)) {
 			last_print_time = uptime_seconds;
-			printlf("[%d] The current ADC value is %d \n\r", uptime_seconds, potReading);
+			printlf("[%d] The current distance_millimeters value is %d \n\r", uptime_seconds, distance_millimeters);
 			NEED_PRINT = false;
 		}
 		
