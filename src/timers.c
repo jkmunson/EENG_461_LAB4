@@ -65,7 +65,7 @@ void timeKeeperISR (void) {
 	}
 	
 	if(++sonic_sensor_action_div == TIMER1_MULTIPLIER/16) {
-		// Send pulse with sonic sensor. This results in 4 falling edges/sec
+		// Start pulse with sonic sensor.
 		GPIO_PORTB_DATA_BITS_R[SONIC_TRIG_PIN] = SONIC_TRIG_PIN;
 		sensor_trigger_start_time = get_uptime_cycles();
 		sonic_sensor_action_div = 0;
@@ -78,14 +78,12 @@ uint64_t get_uptime_cycles(void) {
 	uint64_t overflow_count_now;
 	uint64_t cycles_now;
 	
-	__asm("CPSID I\n"); //Disable interrupt handling
 	do {
 		if(TIMER_ISR_IS_PENDING) timeKeeperISR();
 		overflow_count_now = timer1_overflow_count;
 		cycles_now = TIMER_CYCLES - TIMER1_TAR_R;
 	// If the counter overflowed during this code block, then our reads of uptime and cycles are invalid. Re-do them.
 	} while (TIMER_ISR_IS_PENDING); 
-	__asm("CPSIE I\n"); //Re-enable interrupt handeling
 	
 	return (TIMER_CYCLES * overflow_count_now) + cycles_now;
 }
