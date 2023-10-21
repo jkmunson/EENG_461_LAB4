@@ -3,7 +3,7 @@
 
 #include "common/tm4c123gh6pm.h"
 
-extern volatile uint16_t distance_millimeters;
+extern volatile uint32_t distance_millimeters;
 extern volatile uint64_t sensor_trigger_start_time;
 
 void configure_sonic_sensor(void);

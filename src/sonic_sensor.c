@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "uart_print.h"
 
-volatile uint16_t distance_millimeters;
+volatile uint32_t distance_millimeters;
 volatile uint64_t sensor_trigger_start_time;
 
 #define CAPTURE_TIMER_PRESCALE 128
@@ -57,21 +57,20 @@ void TIMER2B_INT_HANDELER(void){
 	
 	switch (edge_type){
 		case RISING: {
-			const uint32_t temp = TIMER2_TBR_R;
-			cycles_rise = ((temp & 0xFFFF) * CAPTURE_TIMER_PRESCALE) + ((temp & 0xFF0000) >> 16);
+			cycles_rise = TIMER2_TBR_R;
 		} return;
 		
 		case FALLING: {
 			//The prescaler at 16:23 acts as the low 8 bits of a 24 bit value for the counter. By reshuffling the bytes
 			//We effectively get a 24 bit counter
-			const uint32_t temp = TIMER2_TBR_R;
-			const uint32_t cycles_fall = ((temp & 0xFFFF) * CAPTURE_TIMER_PRESCALE) + ((temp & 0xFF0000) >> 16);
+			const uint32_t cycles_fall = TIMER2_TBR_R;
 			
 			//If no time wrap has occurred, then it's the difference. Otherwise, it's the max value minus the difference
 			//This assumes that it hasn't been more than twice the timer period. 
 			const uint32_t cycles_passed = (cycles_fall > cycles_rise) ? (cycles_fall - cycles_rise) : (0xFFFFFF) - (cycles_rise - cycles_fall);
-			
-			distance_millimeters = cycles_passed / cycles_per_mm;
+			const uint32_t temp_distance = cycles_passed / cycles_per_mm;
+			if (temp_distance > 2000) return; //Ignore values too large - likely a lost/reflected/timeout pulse
+			distance_millimeters = ((distance_millimeters*7) + temp_distance) / 8; //Average in values over 8 valid readings
 		} return;
 	}
 }
