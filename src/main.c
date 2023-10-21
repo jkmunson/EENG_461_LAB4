@@ -26,8 +26,8 @@ int main (void) {
 	GPIOConfigure();
 	configureDebounceTimer();
 
-	ADCPinConfigure();
-	ADCSampleSequencerConfigure();
+	//ADCPinConfigure();
+	//ADCSampleSequencerConfigure();
 
 	PWMConfigure();
 	
@@ -36,29 +36,29 @@ int main (void) {
 	Enable_Interrupts(); //Enable Global Interrupts
 	
 	uint16_t last_distance = 0; //Last stored distance
-	//int32_t last_print_time = 0;
+	int32_t last_print_time = 0;
 	
 	while (1) {
-		set_angle = (distance_millimeters * DEG_OF_ROTATION) / 1000;
-		
-		
 		/* If a duty cycle change occured, calculate new value and set pulse width */
-		if (last_distance != distance_millimeters && (0 <= set_angle && set_angle <= DEG_OF_ROTATION)) {
+		if (last_distance != distance_millimeters) {
+			set_angle = (distance_millimeters * DEG_OF_ROTATION) / 1000;
+			if(set_angle > DEG_OF_ROTATION) set_angle = DEG_OF_ROTATION;
+			
 			duty_cycle = (((set_angle * (MAX_PULSE - MIN_PULSE)/DEG_OF_ROTATION) + MIN_PULSE) / 20);
 			PWMSetDutyCycle(duty_cycle);
 			last_distance = distance_millimeters;
 		}
 		
-		if(NEED_PRINT) { //|| (uptime_seconds-last_print_time)
-			//last_print_time = uptime_seconds;
-			printlf("[%u] The current distance_millimeters value is %u \n\r", uptime_seconds, distance_millimeters);
+		if(NEED_PRINT || (uptime_seconds-last_print_time)) {
+			last_print_time = uptime_seconds;
+			printlf("[%u] Distance: %u \t \n\r", uptime_seconds, distance_millimeters);
 			NEED_PRINT = false;
 		}
 		
 		//NOTE for Dr Meyer: There is not a specific requirement for the length of the trigger pulse, it simply needs
 		//to be over 10us then the ping transmits after the falling edge.
 		
-		//End the output pulse for the sonic trigger.
+		//End the output pulse for the sonic trigger it it's been over 10us
 		if(GPIO_PORTB_DATA_BITS_R[SONIC_TRIG_PIN] && ((get_uptime_cycles() - sensor_trigger_start_time) > (ROM_SysCtlClockGet()>>13) ) ) {
 			GPIO_PORTB_DATA_BITS_R[SONIC_TRIG_PIN] = 0;
 		}
