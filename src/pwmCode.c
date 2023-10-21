@@ -27,7 +27,7 @@ void PWMConfigure(void) {
     PWM0_2_GENB_R = PWM_2_GENB_ACTCMPBD_ONE | PWM_2_GENB_ACTLOAD_ZERO | PWM_2_GENB_ACTZERO_ONE;
                                                                             //Set PWM1 Gen2-B comparator, load, and zero
 
-    PWM0_2_LOAD_R = CYCLES_PER_MS * 20;                                     //Set PWM Gen2 Period to 20ms
+    PWM0_2_LOAD_R = CYCLES_PER_MS * 10;                                     //Set PWM Gen2 Period to 10ms
     PWM0_2_CMPB_R = CYCLES_PER_MS * 1.5;                                    //Set initial duty cycle to ~90deg
 
     PWMEnable();                                                            //Enable PWM
@@ -35,15 +35,11 @@ void PWMConfigure(void) {
 }
 
 void PWMSetPeriod(uint16_t cycles_per_period) {
-    PWMDisable();                                                           //Disable PWM
     PWM0_2_LOAD_R = cycles_per_period;                                      //Set new period
-    PWMEnable();                                                            //Enable PWM
 }
 
 void PWMSetDutyCycle(float duty_cycle) {
-    PWMDisable();                                                           //Disable PWM
     PWM0_2_CMPB_R = CYCLES_PER_MS * 20 * duty_cycle;                        //Set new duty cycle
-    PWMEnable();                                                            //Enable PWM
 }
 
 void PWMEnable(void) {
