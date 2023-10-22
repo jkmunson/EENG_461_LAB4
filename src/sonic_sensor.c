@@ -61,15 +61,15 @@ void TIMER2B_INT_HANDELER(void){
 		} return;
 		
 		case FALLING: {
-			//The prescaler at 16:23 acts as the low 8 bits of a 24 bit value for the counter. By reshuffling the bytes
-			//We effectively get a 24 bit counter
 			const uint32_t cycles_fall = TIMER2_TBR_R;
 			
 			//If no time wrap has occurred, then it's the difference. Otherwise, it's the max value minus the difference
 			//This assumes that it hasn't been more than twice the timer period. 
 			const uint32_t cycles_passed = (cycles_fall > cycles_rise) ? (cycles_fall - cycles_rise) : (0xFFFFFF) - (cycles_rise - cycles_fall);
+			
 			const uint32_t temp_distance = cycles_passed / cycles_per_mm;
 			if (temp_distance > 2000) return; //Ignore values too large - likely a lost/reflected/timeout pulse
+			
 			distance_millimeters = ((distance_millimeters*7) + temp_distance) / 8; //Average in values over 8 valid readings
 		} return;
 	}
