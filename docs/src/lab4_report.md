@@ -20,11 +20,11 @@ The third task is to print the distance every third of a second.
 
 #### Narrative
 <p>The ultrasonic sensor operates with three stages. The first stage is the triggering event. The trigger for the sensor 
-requires a high pulse with a width of at least 10 microseconds. The trigger pulse is produced using a PWM with a period of 
+requires a high pulse with a width of at least 10 microseconds. We produce the trigger pulse is produced using a PWM with a period of
 [at least] 60 milliseconds and a high time of the desired 10 microseconds. After the trigger pulse, the sensor produces an 8 cycle 
 sonic burst. The sonic wave travels through the air where it eventually bounces off an object and is reflected back to the 
 sensor. When the sonic wave reaches the sensor, the sensor interrupts the echo and sends a pulse through the echo pin to 
-the connect microcontroller. Input capture using a general-purpose timer was implemented, which essentially means 
+the connected microcontroller. Input capture using a general-purpose timer was implemented, which essentially means
 the microcontroller is actively waiting for the rising edge of the echo pulse and records 
 the time when it receives the rising edge. The MCU then waits for the falling edge to record the ending time. The total 
 echo time is then computed by:  </p>
@@ -90,10 +90,10 @@ desired.</p>
 
 #### Concluding Remarks
 <p>This lab presented many challenges, mostly with the ultrasonic sensor. The ultrasonic sensor operates at 5V supply and logic, while the TM4C123GH6PM uses 
-3.3V logic. The TM4C123 is 5V tolerate, but some back-feeding was discovered, so a resistor was added between the trigger 
+3.3V logic. The TM4C123 is 5V tolerant, but some 5v back-feeding on the trig pin was discovered, so a resistor was added between both the trigger
 on the MCU and the trigger on the ultrasonic sensor. Additionally, for stability purposes, a logic shifter was used on 
 the echo signal to shift it from 5V to 3.3V. The ultrasonic sensor was also found to be unreliable when detecting soft 
-objects such as skin or clothes, as they may absorb sound-waves, hence solid, smooth objects gave the most stable readings.</p>
+objects such as skin or clothes, as they may absorb sound-waves, hence solid, smooth objects gave the most stable readings. The sonic sensor is also unreliable if sonic pulses are delivered near it's maximum rate.</p>
 
 #### Appendix - main.h
 ```c

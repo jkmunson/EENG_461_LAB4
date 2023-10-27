@@ -63,6 +63,6 @@ app_info: $(BUILD_DIR)/${TARGET}.axf
 %.pdf: docs/src/%.md Makefile
 	pandoc $< -o $@ --highlight-style tango --pdf-engine=xelatex 
 
-report: lab3_report.pdf
+report: lab4_report.pdf
 
 .PHONY: all clean flash compiling app_info report
