@@ -20,10 +20,12 @@ The third task is to print the distance every third of a second.
 
 #### Narrative
 <p>The ultrasonic sensor operates with three stages. The first stage is the triggering event. The trigger for the sensor 
-requires a high pulse with a width of at least 10 microseconds. After the trigger pulse, the sensor produces an 8 cycle 
+requires a high pulse with a width of at least 10 microseconds. The trigger pulse is produced using a PWM with a period of 
+[at least] 60 milliseconds and a high time of the desired 10 microseconds. After the trigger pulse, the sensor produces an 8 cycle 
 sonic burst. The sonic wave travels through the air where it eventually bounces off an object and is reflected back to the 
 sensor. When the sonic wave reaches the sensor, the sensor interrupts the echo and sends a pulse through the echo pin to 
-the connect microcontroller. The microcontroller is actively waiting for the rising edge of the echo pulse and records 
+the connect microcontroller. Input capture using a general-purpose timer was implemented, which essentially means 
+the microcontroller is actively waiting for the rising edge of the echo pulse and records 
 the time when it receives the rising edge. The MCU then waits for the falling edge to record the ending time. The total 
 echo time is then computed by:  </p>
 
